@@ -1,7 +1,7 @@
 package edu.uic.cs494.a3;
 
 public abstract class Result<T> {
-    private boolean ready = false;
+    private boolean ready = false; ///AtomicBoolean ??
     private T result;
 
     public boolean isReady() {
