@@ -36,7 +36,6 @@ public class Test02_GetContentsShelf {
 
             Assert.assertEquals(expected, w.getContents(s));
 
-            w.getContents().clear();
             w.getContents(s).clear();
 
             Assert.assertEquals(expected, w.getContents(s));
