@@ -190,4 +190,83 @@ public class Test07_AsyncProgress {
 
         Assert.assertTrue(done > submitted);
     }
+
+    @Test
+    public void asyncMoveItemsWithoutRunningThreads() {
+        Warehouse w = Warehouse.createWarehouse();
+        int size = 100_000;
+        int test = 200_000;
+        Shelf from = w.createShelf(size); // Thread not started
+        Shelf to   = w.createShelf(size); // Thread not started
+
+        Item[] items = new Item[test];
+        HashSet<Item> allItems = new HashSet<>(test);
+
+        for (int i = 0; i < test; i++) {
+            Item item = w.createItem(Test01_AddItems.ITEM_NAME + i);
+            allItems.add(item);
+            from.items.add(item); // add item directly to internal representation of shelf
+
+            Assert.assertFalse(w.moveItemsAsync(from, to, Set.of(item)).isReady());
+        }
+
+        Assert.assertEquals(allItems, from.items);
+        Assert.assertTrue(to.items.isEmpty());
+    }
+
+    @Test
+    public void asyncMoveItemsWithoutRunningThreadsThenWaitForCompletion() {
+        Warehouse w = Warehouse.createWarehouse();
+        int size_from = 1000;
+        int size_to   =  500;
+        int test = 1000;
+        Shelf from = w.createShelf(size_from); // Thread not started
+        Shelf to   = w.createShelf(size_to);   // Thread not started
+        Result<Boolean>[] results = new Result[test];
+
+        HashSet<Item> expected = new HashSet<>(1000);
+
+        long start = System.nanoTime();
+        for (int i = 0; i < test; i++) {
+            Item item = w.createItem(Test01_AddItems.ITEM_NAME + i);
+            from.items.add(item); // Add item directly to internal representation of shelf
+            expected.add(item);
+
+            results[i] = w.moveItemsAsync(from, to, Set.of(item));
+            Assert.assertFalse(results[i].isReady());
+        }
+        long added = System.nanoTime() - start;
+
+        Assert.assertEquals(expected, from.items);
+        Assert.assertTrue(to.items.isEmpty());
+
+        from.startThread();
+        to.startThread();
+
+        start = System.nanoTime();
+        int expectedTrues = 500;
+        int expectedFalses = 500;
+        for (int i = 0; i < test; i++) {
+            if (results[i].getResult())
+                expectedTrues -= 1;
+            else
+                expectedFalses -= 1;
+        }
+        long done = System.nanoTime() - start;
+
+        Assert.assertEquals(0, expectedFalses);
+        Assert.assertEquals(0, expectedTrues);
+
+        System.out.println(added);
+        System.out.println(done);
+
+        Assert.assertTrue(done > added);
+
+        Assert.assertEquals(expected, w.getContents());
+        Assert.assertEquals(500, w.getContents(from).size());
+        Assert.assertEquals(500, w.getContents(to).size());
+        Assert.assertEquals(500, to.items.size());
+        Assert.assertEquals(500, from.items.size());
+    }
+
 }

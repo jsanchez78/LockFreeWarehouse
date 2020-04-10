@@ -7,6 +7,21 @@ import java.util.*;
 
 public class Test05_MoveSimple {
 
+    @Test
+    public void moveItemToEmptyShelf() {
+        Warehouse w = Warehouse.createWarehouse();
+        Shelf s1 = w.createShelf(2).startThread();
+        Shelf s2 = w.createShelf(2).startThread();
+        Item i1 = w.createItem(Test01_AddItems.LAPTOP_ITEM_NAME);
+        Item i2 = w.createItem(Test01_AddItems.DESKTOP_ITEM_NAME);
+
+        Set<Item> toAdd = new HashSet<>(Arrays.asList(new Item[]{i1, i2}));
+        Assert.assertTrue(w.addItems(s1, toAdd));
+
+        Set<Item> toMove = new HashSet<>(Arrays.asList(new Item[]{i1, i2}));
+        Assert.assertTrue(w.moveItems(s1, s2, toMove));
+    }
+
 
     @Test
     public void moveItemToFullShelf() {
