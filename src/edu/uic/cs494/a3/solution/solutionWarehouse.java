@@ -2,19 +2,37 @@ package edu.uic.cs494.a3.solution;
 
 import edu.uic.cs494.a3.*;
 
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> {
 
 
+
+
+    LinkedList<solutionShelf> shelves = new LinkedList<>();//Keep track of all the shelves
+
+    Lock l = new ReentrantLock();     //Lock to limit concurrency
+
     @Override
     public solutionShelf createShelf(int size) {
-        return null;
+        try {
+            l.lock();
+            solutionShelf new_shelf = new solutionShelf(size);
+            shelves.add(new_shelf);
+            return new_shelf;
+        }
+        finally {
+            l.unlock();
+        }
     }
 
     @Override
     public solutionItem createItem(String description) {
-        return null;
+        return new solutionItem(description);
     }
 
 
@@ -44,6 +62,12 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
 
     @Override
     public Set<solutionItem> getContents(solutionShelf solutionShelf) {
+        /*
+        * Only 1 thread accessing shelf contents
+        *
+        * No need to synchronize
+        *
+        * */
         return null;
     }
 

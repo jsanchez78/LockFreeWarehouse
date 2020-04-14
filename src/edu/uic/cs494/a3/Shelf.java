@@ -1,5 +1,7 @@
 package edu.uic.cs494.a3;
 
+import edu.uic.cs494.a3.Unbounded_Lock_Free_Queue.EmptyException;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,7 +44,12 @@ public abstract class Shelf<I extends Item> implements Runnable {
 
     public final void run() {
         while (true) {
-            Action a = getAction();
+            Action a = null;
+            try {
+                a = getAction();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
             switch (a.operation) {
                 case ADD:
@@ -62,7 +69,7 @@ public abstract class Shelf<I extends Item> implements Runnable {
 
     protected abstract void doAction(Action a);
 
-    protected abstract Action getAction();
+    protected abstract Action getAction() throws InterruptedException;
 
     protected abstract void add(Set<I> items, Result<Boolean> result);
 

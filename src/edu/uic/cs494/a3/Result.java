@@ -4,6 +4,15 @@ public abstract class Result<T> {
     private boolean ready = false; ///AtomicBoolean ??
     private T result;
 
+    /*
+    *
+    *       CompareAndSwap => infinite
+    *       Atomic ref also work
+    *
+    *
+    *       Lock-Free OR Wait-Free
+    *
+    * */
     public boolean isReady() {
         return ready;
     }
@@ -17,7 +26,7 @@ public abstract class Result<T> {
 
     protected final T set(T result) {
         if (this.ready)
-            throw new IllegalStateException("Result is not ready");
+            throw new IllegalStateException("Result is already ready");
 
         this.result = result;
         this.ready = true;

@@ -3,19 +3,34 @@ package edu.uic.cs494.a3.solution;
 import edu.uic.cs494.a3.Action;
 import edu.uic.cs494.a3.Result;
 import edu.uic.cs494.a3.Shelf;
+import edu.uic.cs494.a3.Unbounded_Lock_Free_Queue.EmptyException;
+import edu.uic.cs494.a3.Unbounded_Lock_Free_Queue.Lock_Free_Queue;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 public class solutionShelf extends Shelf<solutionItem> {
 
+    int size;
+
+    //Constructor
+    solutionShelf(int size){
+        this.size = size;
+    }
     /*
      *   1. Waste CPU time
      *   2.Data Race
      *   3.Lost updates
      *
      * */
+
+
     //19:45 ---> bad implementation
-    Action todo = null; //Assumes ONE Action -----> WILL be multiple
+    // QUEUE of Actions ----> Good implementation
+    Lock_Free_Queue<Action> todo_list = new Lock_Free_Queue<>();
+
 
     //2.Data Race ----> doAction & getAction
 
@@ -29,20 +44,48 @@ public class solutionShelf extends Shelf<solutionItem> {
 
 
     */
+
+    //Queue => warehouse
     @Override
     protected void doAction(Action a) {
-        todo = a;
+        synchronized (this){
+            todo_list.enq(a);
+            notify();
+        }
     }
 
     //2.Data Race ----> doAction & getAction
+    //Dequeue => shelf class
+    /*
+    *
+    * Remove from queue
+    *
+    * 1) Interrupted Exception => wait fails from allowed thread
+    *
+    * 2) Exception => deq fails
+    *
+    * */
     @Override
     protected Action getAction() {
-        while (todo == null);//1. Waste CPU time
+        Action todo;
+                while(true){
+                    try {
+                        todo = todo_list.deq();
+                    }
+                    catch (Exception e){
+                        synchronized (this) {
+                            //Catch wait exception
+                            try{
+                                this.wait(1000);
+                            }catch (InterruptedException i ){
 
-
-        Action actiontodo = todo;
-        todo = null;
-        return actiontodo;
+                            }
+                        }
+                        continue;
+                    }
+                    break;//Success
+                }
+        return todo;
     }
 
     @Override

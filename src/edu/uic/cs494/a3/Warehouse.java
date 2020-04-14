@@ -1,11 +1,13 @@
 package edu.uic.cs494.a3;
 
+import edu.uic.cs494.a3.solution.solutionWarehouse;
+
 import java.util.Set;
 
 public interface Warehouse <S extends Shelf, I extends Item> {
 
     static Warehouse createWarehouse() {
-        throw new Error("Not implemented");
+        return new solutionWarehouse();
     }
 
     S createShelf(int size);
