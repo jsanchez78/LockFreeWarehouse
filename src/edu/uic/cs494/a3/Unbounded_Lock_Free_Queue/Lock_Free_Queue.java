@@ -4,14 +4,26 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class Lock_Free_Queue<T> {
 
+    Node sentinel;
     AtomicReference<Node> head;
     AtomicReference<Node> tail;
+
+
+    public Lock_Free_Queue(){
+        sentinel = new Node();
+        head = new AtomicReference<>(sentinel);
+        tail = new AtomicReference<>(sentinel);
+        tail = head;
+    }
 
     public class Node{
         public T val;
         public AtomicReference<Node> next;
         public Node(T val){
             this.val = val;
+            next = new AtomicReference<>(null);
+        }
+        public Node(){
             next = new AtomicReference<>(null);
         }
     }

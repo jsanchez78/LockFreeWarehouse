@@ -75,7 +75,7 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
         * No need to synchronize
         *
         * */
-        return null;
+        return solutionShelf.getContents();
     }
 
     @Override

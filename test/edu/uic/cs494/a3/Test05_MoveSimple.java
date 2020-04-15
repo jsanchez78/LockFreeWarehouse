@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.util.*;
 
+
 public class Test05_MoveSimple {
 
     @Test

@@ -88,9 +88,17 @@ public class solutionShelf extends Shelf<solutionItem> {
 
     @Override
     protected void add(Set<solutionItem> items, Result<Boolean> result) {
-        if (items.size() + getContents().size() > size){
+        //Capacity of shelf
+        if (items.size() + getContents().size() > this.size){
             result.setResult(false);
             return;
+        }
+        //Shelf cannot contain duplicates
+        for (solutionItem i: items){
+            if (getContents().contains(i)){
+                result.setResult(false);
+                return;
+            }
         }
         this.addItems(items);
         result.setResult(true);
