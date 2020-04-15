@@ -2,10 +2,7 @@ package edu.uic.cs494.a3.solution;
 
 import edu.uic.cs494.a3.*;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -15,7 +12,7 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
 
 
     LinkedList<solutionShelf> shelves = new LinkedList<>();//Keep track of all the shelves
-
+    LinkedList<solutionResult> results = new LinkedList<>();
     Lock l = new ReentrantLock();     //Lock to limit concurrency
 
     private static final int MAX_DELAY = 2000;
@@ -60,7 +57,22 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
 
     @Override
     public boolean moveItems(solutionShelf from, solutionShelf to, Set<solutionItem> items) {
-     return false;
+
+        /*
+        *   Return result solution
+        *
+        * */
+
+        //FULL SHELF && Test No Room Destination
+        if (items.size() + getContents(to).size() > to.size)
+            return false;
+        ///RemoveItems must be valid (Audit)
+        if (!getContents(from).containsAll(items))
+            return false;
+
+        from.removeItems(items);
+        to.addItems(items);
+        return true;
     }
 
     @Override

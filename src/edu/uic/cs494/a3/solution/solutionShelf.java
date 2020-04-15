@@ -27,8 +27,11 @@ public class solutionShelf extends Shelf<solutionItem> {
     //19:45 ---> bad implementation
     // QUEUE of Actions ----> Good implementation
     Lock_Free_Queue<Action> todo_list = new Lock_Free_Queue<>();
+    LinkedList<Result<Boolean>> results = new LinkedList<>();
 
-
+    protected Result<Boolean> getResult() {
+        return results.removeFirst();
+    }
     //2.Data Race ----> doAction & getAction
 
 
@@ -89,6 +92,7 @@ public class solutionShelf extends Shelf<solutionItem> {
         if (items.size() + getContents().size() > this.size){
             synchronized (result){
                 result.setResult(false);
+                //results.add(result);
                 result.notifyAll();
             }
             return;
@@ -98,6 +102,7 @@ public class solutionShelf extends Shelf<solutionItem> {
             if (getContents().contains(i)){
                 synchronized (result){
                     result.setResult(false);
+                    //results.add(result);
                     result.notifyAll();
                 }
                 return;
@@ -105,6 +110,7 @@ public class solutionShelf extends Shelf<solutionItem> {
         }
         this.addItems(items);
         result.setResult(true);
+        //results.add(result);
     }
 
     @Override
@@ -115,7 +121,9 @@ public class solutionShelf extends Shelf<solutionItem> {
         //If all items are NOT in shelf CANNOT REMOVE
         if (!getContents().containsAll(items)){
             synchronized (result){
+
                 result.setResult(false);
+                //results.add(result);
                 result.notify();
             }
             return;
@@ -123,6 +131,7 @@ public class solutionShelf extends Shelf<solutionItem> {
         synchronized (result){
             this.removeItems(items);
             result.setResult(true);
+            //results.add(result);
         }
 
     }

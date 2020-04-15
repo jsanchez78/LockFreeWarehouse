@@ -20,20 +20,24 @@ public class Lock_Free_Queue<T> {
         public AtomicReference<Node> next;
         public Node(T val){
             this.val = val;
-            next = new AtomicReference<>(null);
+            next = new AtomicReference<>();
         }
         public Node(){
-            next = new AtomicReference<>(null);
+            next = new AtomicReference<>();
         }
     }
     public void enq(T val){
         Node node = new Node(val);
         while (true) {
+            Node first = head.get();
             Node last = tail.get();
             Node next = last.next.get();    //NULL if not updated
+
+
             if (last == tail.get()) {
                 if (next == null) {
                     if (last.next.compareAndSet(next, node)) {
+                        //MAYBE issue enq to empty shelf here
                         tail.compareAndSet(last, node);
                         return;
                     }
