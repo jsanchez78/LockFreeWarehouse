@@ -66,9 +66,14 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
     @Override
     public Set<solutionItem> getContents() {
         /* Gets all items inside the warehouse */
+        solutionResult<Set<solutionItem>> result;
+        Action toPerform;
         Set<solutionItem> ret = new HashSet<>();
         for(solutionShelf s:shelves){
-            ret.addAll(s.getContents());
+            result = new solutionResult<>();
+            toPerform = new Action(Action.Operation.CONTENTS,null,result);
+            s.doAction(toPerform);
+            ret.addAll(result.getResult());
         }
         return ret;
     }

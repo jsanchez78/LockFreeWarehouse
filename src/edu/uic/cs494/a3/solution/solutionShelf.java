@@ -13,7 +13,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class solutionShelf extends Shelf<solutionItem> {
 
     int size;
-
     //Constructor
     solutionShelf(int size){
         this.size = size;
@@ -121,8 +120,11 @@ public class solutionShelf extends Shelf<solutionItem> {
             }
             return;
         }
-        this.removeItems(items);
-        result.setResult(true);
+        synchronized (result){
+            this.removeItems(items);
+            result.setResult(true);
+        }
+
     }
     @Override
     protected void contents(Result<Set<solutionItem>> result) {
