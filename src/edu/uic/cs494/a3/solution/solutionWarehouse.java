@@ -17,6 +17,9 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
 
     Lock l = new ReentrantLock();     //Lock to limit concurrency
 
+    private static final int MAX_DELAY = 2000;
+
+
     @Override
     public solutionShelf createShelf(int size) {
         try {
@@ -47,12 +50,16 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
 
     @Override
     public boolean removeItems(solutionShelf solutionShelf, Set<solutionItem> items) {
-        return false;
+        solutionResult<Boolean> result = new solutionResult<>();
+        Action toPerform = new Action(Action.Operation.REMOVE,items,result);
+        solutionShelf.doAction(toPerform);
+        //Blocked until result is ready
+        return result.getResult();  //WAITING to unleash thread
     }
 
     @Override
     public boolean moveItems(solutionShelf from, solutionShelf to, Set<solutionItem> items) {
-        return false;
+     return false;
     }
 
     @Override

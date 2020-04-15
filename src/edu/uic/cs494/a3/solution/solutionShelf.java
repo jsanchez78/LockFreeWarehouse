@@ -6,10 +6,9 @@ import edu.uic.cs494.a3.Shelf;
 import edu.uic.cs494.a3.Unbounded_Lock_Free_Queue.EmptyException;
 import edu.uic.cs494.a3.Unbounded_Lock_Free_Queue.Lock_Free_Queue;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class solutionShelf extends Shelf<solutionItem> {
 
@@ -25,7 +24,6 @@ public class solutionShelf extends Shelf<solutionItem> {
      *   3.Lost updates
      *
      * */
-
 
     //19:45 ---> bad implementation
     // QUEUE of Actions ----> Good implementation
@@ -90,17 +88,29 @@ public class solutionShelf extends Shelf<solutionItem> {
 
     @Override
     protected void add(Set<solutionItem> items, Result<Boolean> result) {
-        //Logic to add item to this shelf
+        if (items.size() + getContents().size() > size){
+            result.setResult(false);
+            return;
+        }
+        this.addItems(items);
         result.setResult(true);
     }
 
     @Override
     protected void remove(Set<solutionItem> items, Result<Boolean> result) {
-
+        /*Note:
+         *   moveItems can be called and remove will be called within that by another thread
+         * */
+        //If all items are NOT in shelf CANNOT REMOVE
+        if (!getContents().containsAll(items)){
+            result.setResult(false);
+            return;
+        }
+        this.removeItems(items);
+        result.setResult(true);
     }
-
     @Override
     protected void contents(Result<Set<solutionItem>> result) {
-
+       result.setResult(getContents());
     }
 }
