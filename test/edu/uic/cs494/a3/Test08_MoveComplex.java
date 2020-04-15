@@ -117,7 +117,7 @@ public class Test08_MoveComplex {
         LinkedList<Set<Item>> snapshots = new LinkedList<>();
         threads[threads.length-1] = new Thread(() -> {
             for (int j = 0 ; j < work ; j++) {
-                snapshots.addLast(w.getContents());
+                snapshots.addLast((Set<Item>)w.getContentsAsync().getResult());
             }
         });
 
@@ -185,7 +185,7 @@ public class Test08_MoveComplex {
         LinkedList<Set<Item>> snapshots = new LinkedList<>();
         threads[threads.length-1] = new Thread(() -> {
             for (int j = 0 ; j < work ; j++) {
-                snapshots.addLast(w.getContents());
+                snapshots.addLast((Set<Item>)w.getContentsAsync().getResult());
             }
         });
 
