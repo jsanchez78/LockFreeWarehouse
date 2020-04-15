@@ -13,7 +13,6 @@ public class Lock_Free_Queue<T> {
         sentinel = new Node();
         head = new AtomicReference<>(sentinel);
         tail = new AtomicReference<>(sentinel);
-        tail = head;
     }
 
     public class Node{
@@ -31,10 +30,10 @@ public class Lock_Free_Queue<T> {
         Node node = new Node(val);
         while (true) {
             Node last = tail.get();
-            Node next = last.next.get();
+            Node next = last.next.get();    //NULL if not updated
             if (last == tail.get()) {
                 if (next == null) {
-                    if (last.next.compareAndSet(null, node)) {
+                    if (last.next.compareAndSet(next, node)) {
                         tail.compareAndSet(last, node);
                         return;
                     }
@@ -44,7 +43,7 @@ public class Lock_Free_Queue<T> {
             }
         }
     }
-    public T deq() throws EmptyException {
+    public T deq() {
         while (true) {
              Node first = head.get();
             Node last = tail.get();
@@ -52,7 +51,7 @@ public class Lock_Free_Queue<T> {
             if (first == head.get()) {
                 if (first == last) {
                     if (next == null) {
-                        throw new EmptyException();
+                        return null;
                         }
                     tail.compareAndSet(last, next);
                     } else {
@@ -63,7 +62,9 @@ public class Lock_Free_Queue<T> {
                 }
             }
         }
-
+    public boolean isEmpty(){
+        return head.get().equals(tail.get());
+    }
 
 }
 

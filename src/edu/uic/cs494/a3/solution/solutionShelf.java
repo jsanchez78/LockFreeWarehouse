@@ -46,9 +46,9 @@ public class solutionShelf extends Shelf<solutionItem> {
     //Queue => warehouse
     @Override
     protected void doAction(Action a) {
-        synchronized (this){
-            todo_list.enq(a);
-            notify();
+        todo_list.enq(a);
+        synchronized (allowedThread){
+            allowedThread.notify();
         }
     }
 
@@ -66,37 +66,41 @@ public class solutionShelf extends Shelf<solutionItem> {
     @Override
     protected Action getAction() {
         Action todo;
-                while(true){
-                    try {
-                        todo = todo_list.deq();
-                    }
-                    catch (Exception e){
-                        synchronized (this) {
-                            //Catch wait exception
-                            try{
-                                this.wait(1000);
-                            }catch (InterruptedException i ){
+        synchronized (allowedThread) {
+           while(true){
+                   todo = todo_list.deq();
+                   if (todo == null){//EMPTY
+                       try{
+                           allowedThread.wait(100);
+                       }
+                       catch (InterruptedException i){}
+                       //continue;
+                   }
+                   else
+                       return todo;
 
-                            }
-                        }
-                        continue;
-                    }
-                    break;//Success
-                }
-        return todo;
+           }
+        }
+
     }
 
     @Override
     protected void add(Set<solutionItem> items, Result<Boolean> result) {
         //Capacity of shelf
         if (items.size() + getContents().size() > this.size){
-            result.setResult(false);
+            synchronized (result){
+                result.setResult(false);
+                result.notifyAll();
+            }
             return;
         }
         //Shelf cannot contain duplicates
         for (solutionItem i: items){
             if (getContents().contains(i)){
-                result.setResult(false);
+                synchronized (result){
+                    result.setResult(false);
+                    result.notifyAll();
+                }
                 return;
             }
         }
@@ -111,7 +115,10 @@ public class solutionShelf extends Shelf<solutionItem> {
          * */
         //If all items are NOT in shelf CANNOT REMOVE
         if (!getContents().containsAll(items)){
-            result.setResult(false);
+            synchronized (result){
+                result.setResult(false);
+                result.notify();
+            }
             return;
         }
         this.removeItems(items);

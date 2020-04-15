@@ -2,6 +2,7 @@ package edu.uic.cs494.a3.solution;
 
 import edu.uic.cs494.a3.*;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
@@ -64,7 +65,12 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
 
     @Override
     public Set<solutionItem> getContents() {
-        return null;
+        /* Gets all items inside the warehouse */
+        Set<solutionItem> ret = new HashSet<>();
+        for(solutionShelf s:shelves){
+            ret.addAll(s.getContents());
+        }
+        return ret;
     }
 
     @Override
@@ -75,7 +81,11 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
         * No need to synchronize
         *
         * */
-        return solutionShelf.getContents();
+        solutionResult<Set<solutionItem>> result = new solutionResult<>();
+        Action toPerform = new Action(Action.Operation.CONTENTS,null,result);
+        solutionShelf.doAction(toPerform);
+        //Blocked until result is ready
+        return result.getResult();  //WAITING to unleash thread
     }
 
     @Override
