@@ -33,7 +33,7 @@ public class Lock_Free_Queue<T> {
             Node last = tail.get();
             Node next = last.next.get();    //NULL if not updated
 
-
+            ///List at least ONE Node
             if (last == tail.get()) {
                 if (next == null) {
                     if (last.next.compareAndSet(next, node)) {

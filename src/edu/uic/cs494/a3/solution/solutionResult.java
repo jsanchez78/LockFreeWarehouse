@@ -4,7 +4,8 @@ import edu.uic.cs494.a3.Result;
 
 public class solutionResult<T> extends Result<T> {
 
-
+    solutionResult<T> waitForThis1; // This returns an int
+    solutionResult<T> waitForThis2; // This returns an int
     //18:52 ------> Bad implementation
     @Override
     public void setResult(T result) {
@@ -19,10 +20,11 @@ public class solutionResult<T> extends Result<T> {
         while (true){
             synchronized (this){
                 try {
-                    this.wait(100);
+                    this.wait(1);
                     if(isReady()){
                         break;
                     }
+
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -30,5 +32,6 @@ public class solutionResult<T> extends Result<T> {
         }
         return super.get();
     }
+
 
 }

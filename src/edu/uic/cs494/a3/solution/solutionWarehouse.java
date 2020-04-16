@@ -3,6 +3,7 @@ package edu.uic.cs494.a3.solution;
 import edu.uic.cs494.a3.*;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -61,18 +62,49 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
         /*
         *   Return result solution
         *
-        * */
+        *
 
         //FULL SHELF && Test No Room Destination
-        if (items.size() + getContents(to).size() > to.size)
-            return false;
-        ///RemoveItems must be valid (Audit)
-        if (!getContents(from).containsAll(items))
-            return false;
 
-        from.removeItems(items);
-        to.addItems(items);
-        return true;
+
+    */
+        while (true){
+            synchronized (from.allowedThread){
+                try {
+                    from.allowedThread.wait(1);
+                    if (removeItems(from,items))
+                        break;
+                    else{
+                        addItems(from,items);
+                    }
+                }
+                catch (InterruptedException e){
+
+                }
+            }
+        }
+        while (true){
+            synchronized (to.allowedThread){
+                int add_counter = 0;
+                add_counter += 1;
+                try {
+                    to.allowedThread.wait(1);
+                    if (addItems(to,items))
+                        return true;
+                    else{
+                        if (add_counter > 1){
+                            addItems(from,items);
+                            return false;
+                        }
+                    }
+                }
+                catch (InterruptedException e2){
+                    continue;
+                }
+            }
+        }
+
+
     }
 
     @Override
