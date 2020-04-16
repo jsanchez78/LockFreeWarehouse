@@ -9,7 +9,10 @@ public class solutionResult<T> extends Result<T> {
     //18:52 ------> Bad implementation
     @Override
     public void setResult(T result) {
-        super.set(result);
+        synchronized (this){
+            super.set(result);
+            this.notify();
+        }
     }
 
     @Override
@@ -20,7 +23,7 @@ public class solutionResult<T> extends Result<T> {
         while (true){
             synchronized (this){
                 try {
-                    this.wait(1);
+                    this.wait(10);
                     if(isReady()){
                         break;
                     }

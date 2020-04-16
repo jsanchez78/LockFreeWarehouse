@@ -27,7 +27,6 @@ public class solutionShelf extends Shelf<solutionItem> {
     //19:45 ---> bad implementation
     // QUEUE of Actions ----> Good implementation
     Lock_Free_Queue<Action> todo_list = new Lock_Free_Queue<>();
-    //LinkedList<Result<Boolean>> results = new LinkedList<>();
 
 
     //2.Data Race ----> doAction & getAction
@@ -71,7 +70,7 @@ public class solutionShelf extends Shelf<solutionItem> {
                    todo = todo_list.deq();
                    if (todo == null){//EMPTY
                        try{
-                           allowedThread.wait(100);
+                           allowedThread.wait(10);
                        }
                        catch (InterruptedException i){}
                        //continue;
@@ -84,29 +83,21 @@ public class solutionShelf extends Shelf<solutionItem> {
 
     @Override
     protected void add(Set<solutionItem> items, Result<Boolean> result) {
+
         //Capacity of shelf
         if (items.size() + getContents().size() > this.size){
-            synchronized (result){
-                result.setResult(false);
-                //results.add(result);
-                result.notifyAll();
-            }
+            result.setResult(false);
             return;
         }
         //Shelf cannot contain duplicates
         for (solutionItem i: items){
             if (getContents().contains(i)){
-                synchronized (result){
                     result.setResult(false);
-                    //results.add(result);
-                    result.notifyAll();
-                }
                 return;
             }
         }
         this.addItems(items);
         result.setResult(true);
-        //results.add(result);
     }
 
     @Override
@@ -116,19 +107,11 @@ public class solutionShelf extends Shelf<solutionItem> {
          * */
         //If all items are NOT in shelf CANNOT REMOVE
         if (!getContents().containsAll(items)){
-            synchronized (result){
-                result.setResult(false);
-                //results.add(result);
-                result.notify();
-            }
+            result.setResult(false);
             return;
         }
-        synchronized (result){
             this.removeItems(items);
             result.setResult(true);
-           // results.add(result);
-        }
-
     }
     @Override
     protected void contents(Result<Set<solutionItem>> result) {

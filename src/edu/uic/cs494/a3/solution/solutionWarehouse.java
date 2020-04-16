@@ -65,48 +65,17 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
         *
 
         //FULL SHELF && Test No Room Destination
-
-
     */
+        if (!removeItems(from,items))
+            return false;
+
         while (true){
-            synchronized (from.allowedThread){
-                try {
-                    from.allowedThread.wait(1);
-                    if (removeItems(from,items))
-                        break;
-                    else{
-                        addItems(from,items);
-                    }
-                }
-                catch (InterruptedException e){
-
-                }
-            }
+            if (addItems(to,items))
+                return true;
+            if (addItems(from,items))
+                return false;
         }
-        while (true){
-            synchronized (to.allowedThread){
-                int add_counter = 0;
-                add_counter += 1;
-                try {
-                    to.allowedThread.wait(1);
-                    if (addItems(to,items))
-                        return true;
-                    else{
-                        if (add_counter > 1){
-                            addItems(from,items);
-                            return false;
-                        }
-                    }
-                }
-                catch (InterruptedException e2){
-                    continue;
-                }
-            }
-        }
-
-
     }
-
     @Override
     public Set<solutionItem> getContents() {
         /* Gets all items inside the warehouse */
@@ -148,21 +117,83 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
 
     @Override
     public Result<Boolean> removeItemsAsync(solutionShelf solutionShelf, Set<solutionItem> items) {
-        return null;
+        solutionResult<Boolean> result = new solutionResult<>();
+        Action toPerform = new Action(Action.Operation.REMOVE,items,result);
+        solutionShelf.doAction(toPerform);
+        //No waiting
+        return result;
     }
 
     @Override
     public Result<Boolean> moveItemsAsync(solutionShelf from, solutionShelf to, Set<solutionItem> items) {
-        return null;
+
+        solutionResult<Boolean> result = new solutionResult<>();
+          /*
+        *   Return result solution
+        *
+        *
+
+        //FULL SHELF && Test No Room Destination
+        *
+        *
+        * TWO Conditions
+
+        if (!removeItems(from,items))
+            return false;
+
+        while (true){
+            if (addItems(to,items))
+                return true;
+            if (addItems(from,items))
+
+        }
+        return new solutionResult<>(){
+            @Override
+            public Set<solutionItem> getResult() {
+
+
+            }};
+
+           */
+          return result;
     }
+
 
     @Override
     public Result<Set<solutionItem>> getContentsAsync() {
-        return null;
-    }
+        /* Gets all items inside the warehouse */
+        LinkedList<Result<Set<solutionItem>>> results = new LinkedList<>();
+        solutionResult<Set<solutionItem>> result;
+        Action toPerform;
 
+        for(solutionShelf s:shelves){
+            result = new solutionResult<>();
+            results.add(result);
+            toPerform = new Action(Action.Operation.CONTENTS,null,result);
+            s.doAction(toPerform);
+        }
+        Set<solutionItem> result_async = new HashSet<>();
+
+        return new solutionResult<>(){
+            @Override
+            public Set<solutionItem> getResult() {
+                if (this.isReady())
+                    return this.get();
+
+                for (Result<Set<solutionItem>> r:results){
+                    result_async.addAll(r.getResult());
+                }
+                setResult(result_async);
+                return this.get();
+            }
+        };
+    }
     @Override
     public Result<Set<solutionItem>> getContentsAsync(solutionShelf solutionShelf) {
-        return null;
+        solutionResult<Set<solutionItem>> result = new solutionResult<>();
+        Action toPerform = new Action(Action.Operation.CONTENTS,null,result);
+        solutionShelf.doAction(toPerform);
+        //Blocked until result is ready
+       return result;
     }
 }
