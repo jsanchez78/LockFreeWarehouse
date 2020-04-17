@@ -132,11 +132,11 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
 
        Result<Boolean> result_remove = removeItemsAsync(from,items);
        Result<Boolean> result_add = addItemsAsync(to,items);
-
             return new solutionResult<>(){
                 public Boolean getResult() {
-                    Boolean remove_passed = result_remove.getResult();
+                    //volatile
                     Boolean add_passed = result_add.getResult();
+                    Boolean remove_passed = result_remove.getResult();
                     //REMOVE PASSED && ADD PASSED
                     if (remove_passed  && add_passed){
                         setResult(true);
@@ -185,7 +185,6 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
             s.doAction(toPerform);
             results.add(result);
         }
-
         Set<solutionItem> result_async = new HashSet<>();
         return new solutionResult<>(){
             @Override

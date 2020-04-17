@@ -20,20 +20,22 @@ public class solutionResult<T> extends Result<T> {
         //1. Waste CPU
         //2.Data race
 
-        while (true){
-            synchronized (this){
+        while (true) {
+            synchronized (this) {
                 //try {
-                    //this.wait(1);
-                    if(this.isReady()){
-                        break;
-                    }
+                //this.wait(1);
+                if (this.isReady()) {
+                    break;
+                }
 
-                //} catch (InterruptedException e) {
-                   //e.printStackTrace();
+                // } catch (InterruptedException e) {
+                // e.printStackTrace();
+                //}
                 //}
             }
         }
-        return super.get();
+        return this.get();
+
     }
 
 
