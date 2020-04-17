@@ -9,14 +9,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> {
 
-
-
-
     LinkedList<solutionShelf> shelves = new LinkedList<>();//Keep track of all the shelves
     Lock l = new ReentrantLock();     //Lock to limit concurrency
 
     private static final int MAX_DELAY = 2000;
-
 
     @Override
     public solutionShelf createShelf(int size) {
@@ -54,17 +50,14 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
         //Blocked until result is ready
         return result.getResult();  //WAITING to unleash thread
     }
-
     @Override
     public boolean moveItems(solutionShelf from, solutionShelf to, Set<solutionItem> items) {
-
         /*
         *   Return result solution
         *
         *
-
         //FULL SHELF && Test No Room Destination
-    */
+        */
         if (!removeItems(from,items))
             return false;
 
@@ -89,7 +82,6 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
         }
         return ret;
     }
-
     @Override
     public Set<solutionItem> getContents(solutionShelf solutionShelf) {
         /*
@@ -125,7 +117,6 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
 
     @Override
     public Result<Boolean> moveItemsAsync(solutionShelf from, solutionShelf to, Set<solutionItem> items) {
-
         //Blocked until result is ready
         //return result;
         //solutionResult<Boolean> result = new solutionResult<>();
@@ -133,79 +124,77 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
         *   Return result solution
         *
         *
-
         //FULL SHELF && Test No Room Destination
         *
         *
         * TWO Conditions
           */
+
        Result<Boolean> result_remove = removeItemsAsync(from,items);
        Result<Boolean> result_add = addItemsAsync(to,items);
 
             return new solutionResult<>(){
                 public Boolean getResult() {
-                    // REMOVE FAILED
+                    Boolean remove_passed = result_remove.getResult();
+                    Boolean add_passed = result_add.getResult();
                     //REMOVE PASSED && ADD PASSED
-                    if (result_remove.getResult() && result_add.getResult()){
+                    if (remove_passed  && add_passed){
                         setResult(true);
                         return this.get();
                     }
                     // REMOVE FAIL && ADD FAIL
-                    if (!(result_remove.getResult() && result_add.getResult())){
-                        setResult(false);
-                        return this.get();
-                    }
-                    //
-                    while (true){
-                        //REMOVE -> T
-                        //ADD -> F
-                        if(result_remove.getResult() && !result_add.getResult()){
-                            if (addItems(to,items)){
-                                setResult(true);
-                                break;
-                            }
-                            if (addItems(from,items)){
-                                setResult(false);
-                                break;
-                            }
+                    if (!remove_passed){
+                        if (!add_passed){
+                            setResult(false);
+                            return this.get();
                         }
-                        if(!result_remove.getResult() && result_add.getResult()){
-                            if (removeItems(to,items)){
+                        //REMOVE FAILED && ADD PASSED
+                        while(true) {
+                            if (removeItems(to, items)) {
                                 setResult(false);
-                                break;
+                                return this.get();
                             }
                         }
                     }
+                    //ADD FAILED
+                        if(remove_passed && !add_passed) {
+                            while (true) {
+                                if (addItems(to, items)) {
+                                    setResult(true);
+                                    break;
+                                }
+                                //FAILED to add items => Put them back
+                                if (addItems(from, items)) {
+                                    setResult(false);
+                                    break;
+                                }
+                            }
+                        }
                     return this.get();
                 }
-
             };
     }
     @Override
     public Result<Set<solutionItem>> getContentsAsync() {
         /* Gets all items inside the warehouse */
         LinkedList<Result<Set<solutionItem>>> results = new LinkedList<>();
-        solutionResult<Set<solutionItem>> result;
-        Action toPerform;
 
         for(solutionShelf s:shelves){
-            result = new solutionResult<>();
-            results.add(result);
-            toPerform = new Action(Action.Operation.CONTENTS,null,result);
+            solutionResult<Set<solutionItem>> result = new solutionResult<>();
+            Action toPerform = new Action(Action.Operation.CONTENTS,null,result);
             s.doAction(toPerform);
+            results.add(result);
         }
-        Set<solutionItem> result_async = new HashSet<>();
 
+        Set<solutionItem> result_async = new HashSet<>();
         return new solutionResult<>(){
             @Override
             public Set<solutionItem> getResult() {
-                if (this.isReady())
-                    return this.get();
-
                 for (Result<Set<solutionItem>> r:results){
                     result_async.addAll(r.getResult());
                 }
                 setResult(result_async);
+                //setResult(getContents());
                 return this.get();
             }
         };

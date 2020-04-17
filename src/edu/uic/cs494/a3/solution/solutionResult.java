@@ -23,13 +23,13 @@ public class solutionResult<T> extends Result<T> {
         while (true){
             synchronized (this){
                 //try {
-                    //this.wait(100);
+                    //this.wait(1);
                     if(this.isReady()){
                         break;
                     }
 
                 //} catch (InterruptedException e) {
-                    //e.printStackTrace();
+                   //e.printStackTrace();
                 //}
             }
         }
