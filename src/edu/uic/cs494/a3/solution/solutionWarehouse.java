@@ -13,7 +13,6 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
 
 
     LinkedList<solutionShelf> shelves = new LinkedList<>();//Keep track of all the shelves
-    LinkedList<solutionResult> results = new LinkedList<>();
     Lock l = new ReentrantLock();     //Lock to limit concurrency
 
     private static final int MAX_DELAY = 2000;
@@ -127,7 +126,9 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
     @Override
     public Result<Boolean> moveItemsAsync(solutionShelf from, solutionShelf to, Set<solutionItem> items) {
 
-        solutionResult<Boolean> result = new solutionResult<>();
+        //Blocked until result is ready
+        //return result;
+        //solutionResult<Boolean> result = new solutionResult<>();
           /*
         *   Return result solution
         *
@@ -137,28 +138,49 @@ public class solutionWarehouse implements Warehouse<solutionShelf,solutionItem> 
         *
         *
         * TWO Conditions
+          */
+       Result<Boolean> result_remove = removeItemsAsync(from,items);
+       Result<Boolean> result_add = addItemsAsync(to,items);
 
-        if (!removeItems(from,items))
-            return false;
+            return new solutionResult<>(){
+                public Boolean getResult() {
+                    // REMOVE FAILED
+                    //REMOVE PASSED && ADD PASSED
+                    if (result_remove.getResult() && result_add.getResult()){
+                        setResult(true);
+                        return this.get();
+                    }
+                    // REMOVE FAIL && ADD FAIL
+                    if (!(result_remove.getResult() && result_add.getResult())){
+                        setResult(false);
+                        return this.get();
+                    }
+                    //
+                    while (true){
+                        //REMOVE -> T
+                        //ADD -> F
+                        if(result_remove.getResult() && !result_add.getResult()){
+                            if (addItems(to,items)){
+                                setResult(true);
+                                break;
+                            }
+                            if (addItems(from,items)){
+                                setResult(false);
+                                break;
+                            }
+                        }
+                        if(!result_remove.getResult() && result_add.getResult()){
+                            if (removeItems(to,items)){
+                                setResult(false);
+                                break;
+                            }
+                        }
+                    }
+                    return this.get();
+                }
 
-        while (true){
-            if (addItems(to,items))
-                return true;
-            if (addItems(from,items))
-
-        }
-        return new solutionResult<>(){
-            @Override
-            public Set<solutionItem> getResult() {
-
-
-            }};
-
-           */
-          return result;
+            };
     }
-
-
     @Override
     public Result<Set<solutionItem>> getContentsAsync() {
         /* Gets all items inside the warehouse */

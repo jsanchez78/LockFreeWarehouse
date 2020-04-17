@@ -70,7 +70,7 @@ public class solutionShelf extends Shelf<solutionItem> {
                    todo = todo_list.deq();
                    if (todo == null){//EMPTY
                        try{
-                           allowedThread.wait(10);
+                           allowedThread.wait(1);
                        }
                        catch (InterruptedException i){}
                        //continue;

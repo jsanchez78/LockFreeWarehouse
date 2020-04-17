@@ -22,15 +22,15 @@ public class solutionResult<T> extends Result<T> {
 
         while (true){
             synchronized (this){
-                try {
-                    this.wait(10);
-                    if(isReady()){
+                //try {
+                    //this.wait(100);
+                    if(this.isReady()){
                         break;
                     }
 
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                //} catch (InterruptedException e) {
+                    //e.printStackTrace();
+                //}
             }
         }
         return super.get();
